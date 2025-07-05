@@ -25,9 +25,12 @@ class MockAPIClient: APIClientProtocol {
     }
     
     func fetchInventorie(id: Int?) async throws -> Inventory {
+        guard let id else {
+            throw TestError()
+        }
         let jsonData = """
             {
-                "id": 1,
+                "id": \(id),
                 "title": "タイトル"
             }
             """.data(using: .utf8)!

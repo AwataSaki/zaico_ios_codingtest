@@ -17,17 +17,20 @@ class DetailPresenter {
     private(set) var inventory: Inventory?
     private let cellTitles = ["ID", "在庫画像", "タイトル", "数量"]
     weak var view: DetailView?
+    private let apiClient: any APIClientProtocol
     
     var numberOfCellTitles: Int {
         cellTitles.count
     }
     
-    init(inventoryId: Int, view: DetailView) {
+    init(inventoryId: Int, view: DetailView, apiClient: any APIClientProtocol = APIClient.shared) {
         self.inventoryId = inventoryId
         self.view = view
+        self.apiClient = apiClient
     }
     
-    func viewDidLoad() {
+    @discardableResult
+    func viewDidLoad() -> Task<Void, Never> {
         Task {
             await fetchData()
         }
@@ -39,7 +42,7 @@ class DetailPresenter {
     
     private func fetchData() async {
         do {
-            let data = try await APIClient.shared.fetchInventorie(id: inventoryId)
+            let data = try await apiClient.fetchInventorie(id: inventoryId)
             await MainActor.run {
                 inventory = data
                 view?.updateInventory(data)
