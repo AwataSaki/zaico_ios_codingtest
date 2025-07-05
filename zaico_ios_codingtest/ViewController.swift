@@ -52,6 +52,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     @objc private func addButtonTapped(_ sender: UIBarButtonItem) {
         let addInventoryViewController = AddInventoryViewController()
+        addInventoryViewController.delegate = self
         present(addInventoryViewController, animated: true)
     }
     
@@ -81,5 +82,18 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailVC = DetailViewController(id: inventories[indexPath.row].id)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+}
+
+extension MainViewController: AddInventoryViewControllerDelegate {
+    func addInventoryViewController(_ viewController: AddInventoryViewController, didAddInventory title: String) {
+        dismiss(animated: true)
+        refresh()
+    }
+    
+    private func refresh() {
+        Task {
+            await fetchData()
+        }
     }
 }
