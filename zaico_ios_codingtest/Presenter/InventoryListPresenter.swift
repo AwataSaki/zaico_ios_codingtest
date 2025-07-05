@@ -17,16 +17,19 @@ protocol InventoryListView: AnyObject {
 class InventoryListPresenter {
     private var inventories: [Inventory] = []
     weak var view: InventoryListView?
+    private let apiClient: any APIClientProtocol
     
     var numberOfInventories: Int {
         inventories.count
     }
     
-    init(view: InventoryListView) {
+    init(view: InventoryListView, apiClient: any APIClientProtocol = APIClient.shared) {
         self.view = view
+        self.apiClient = apiClient
     }
     
-    func viewDidLoad() {
+    @MainActor @discardableResult
+    func viewDidLoad() -> Task<Void, Never> {
         Task {
             await fetchData()
         }
@@ -47,7 +50,8 @@ class InventoryListPresenter {
         view?.openAddView()
     }
     
-    func didAddInventory(title: String) {
+    @discardableResult
+    func didAddInventory(title: String) -> Task<Void, Never> {
         Task {
             await fetchData()
         }
@@ -55,7 +59,7 @@ class InventoryListPresenter {
     
     private func fetchData() async {
         do {
-            let data = try await APIClient.shared.fetchInventories()
+            let data = try await apiClient.fetchInventories()
             inventories = data
             await view?.updateInventories(to: data)
         } catch {

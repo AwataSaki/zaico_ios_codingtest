@@ -10,13 +10,18 @@ import Foundation
 
 class MockAPIClient: APIClientProtocol {
     private let successful: Bool
+    private let fetchedInventories: [Inventory]
     
-    init(successful: Bool = true) {
+    init(successful: Bool = true, fetchedInventories: [Inventory] = []) {
         self.successful = successful
+        self.fetchedInventories = fetchedInventories
     }
     
     func fetchInventories() async throws -> [Inventory] {
-        []
+        guard successful else {
+            throw TestError()
+        }
+        return fetchedInventories
     }
     
     func fetchInventorie(id: Int?) async throws -> Inventory {
