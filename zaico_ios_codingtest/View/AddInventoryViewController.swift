@@ -12,6 +12,7 @@ protocol AddInventoryViewControllerDelegate: AnyObject {
 }
 
 class AddInventoryViewController: UIViewController {
+    private lazy var presenter = AddInventoryPresenter(view: self)
     private let textField = UITextField()
     private let button = UIButton()
     
@@ -46,14 +47,17 @@ class AddInventoryViewController: UIViewController {
     }
     
     @objc private func addButtonTapped(_ sender: UIButton) {
-        guard let title = textField.text else { return }
-        Task {
-            do {
-                try await APIClient.shared.addInventry(title: title)
-                delegate?.addInventoryViewController(self, didAddInventory: title)
-            } catch {
-                print("Error adding data: \(error.localizedDescription)")
-            }
-        }
+        guard let text = textField.text else { return }
+        presenter.didTapAddButton(text: text)
+    }
+}
+
+extension AddInventoryViewController: AddInventoryView {
+    func notifyAddingInventory(title: String) {
+        delegate?.addInventoryViewController(self, didAddInventory: title)
+    }
+    
+    func dismiss() {
+        dismiss(animated: true)
     }
 }

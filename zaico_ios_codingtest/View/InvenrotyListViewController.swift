@@ -9,6 +9,7 @@ import UIKit
 
 class InvenrotyListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let tableView = UITableView()
+    private lazy var presenter = InventoryListPresenter(view: self)
     private var inventories: [Inventory] = []
 
     override func viewDidLoad() {
@@ -19,9 +20,7 @@ class InvenrotyListViewController: UIViewController, UITableViewDataSource, UITa
         setupTableView()
         setupAddButton()
         
-        Task {
-            await fetchData()
-        }
+        presenter.viewDidLoad()
     }
 
     private func setupTableView() {
@@ -51,49 +50,45 @@ class InvenrotyListViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func addButtonTapped(_ sender: UIBarButtonItem) {
-        let addInventoryViewController = AddInventoryViewController()
-        addInventoryViewController.delegate = self
-        present(addInventoryViewController, animated: true)
-    }
-    
-    private func fetchData() async {
-        do {
-            let data = try await APIClient.shared.fetchInventories()
-            await MainActor.run {
-                inventories = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
+        presenter.didTapAddButton()
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return inventories.count
+        presenter.numberOfInventories
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryCell", for: indexPath) as! InventoryCell
-        cell.configure(leftText: String(inventories[indexPath.row].id),
-                       rightText: inventories[indexPath.row].title)
+        let inventory = presenter.inventory(for: indexPath.row)
+        cell.configure(leftText: String(inventory.id),
+                       rightText: inventory.title)
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let detailVC = DetailViewController(id: inventories[indexPath.row].id)
+        presenter.didSelectRow(at: indexPath)
+    }
+}
+
+extension InvenrotyListViewController: InventoryListView {
+    func updateInventories(to inventories: [Inventory]) {
+        tableView.reloadData()
+    }
+    
+    func transitionToDetail(inventory: Inventory) {
+        let detailVC = DetailViewController(id: inventory.id)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    func openAddView() {
+        let addInventoryViewController = AddInventoryViewController()
+        addInventoryViewController.delegate = self
+        present(addInventoryViewController, animated: true)
     }
 }
 
 extension InvenrotyListViewController: AddInventoryViewControllerDelegate {
     func addInventoryViewController(_ viewController: AddInventoryViewController, didAddInventory title: String) {
-        dismiss(animated: true)
-        refresh()
-    }
-    
-    private func refresh() {
-        Task {
-            await fetchData()
-        }
+        presenter.didAddInventory(title: title)
     }
 }
