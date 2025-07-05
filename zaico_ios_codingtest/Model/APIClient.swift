@@ -7,7 +7,13 @@
 
 import Foundation
 
-class APIClient {
+protocol APIClientProtocol {
+    func fetchInventories() async throws -> [Inventory]
+    func fetchInventorie(id: Int?) async throws -> Inventory
+    func addInventry(title: String) async throws
+}
+
+class APIClient: APIClientProtocol {
     static let shared = APIClient()
     
     private let baseURL = "https://web.zaico.co.jp"

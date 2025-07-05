@@ -15,24 +15,30 @@ protocol AddInventoryView: AnyObject {
 
 class AddInventoryPresenter {
     weak var view: AddInventoryView?
+    private let apiClient: any APIClientProtocol
     
-    init(view: AddInventoryView) {
+    init(view: AddInventoryView, apiClient: any APIClientProtocol = APIClient.shared) {
         self.view = view
+        self.apiClient = apiClient
     }
     
-    func didTapAddButton(text: String) {
+    @MainActor @discardableResult
+    func didTapAddButton(text: String) -> Task<Void, Never> {
         Task {
-            await addInventory(title: text)
-            await view?.notifyAddingInventory(title: text)
-            await view?.dismiss()
+            do {
+                try await addInventory(title: text)
+                view?.notifyAddingInventory(title: text)
+                view?.dismiss()
+            } catch {}
         }
     }
     
-    private func addInventory(title: String) async {
+    private func addInventory(title: String) async throws {
         do {
-            try await APIClient.shared.addInventry(title: title)
+            try await apiClient.addInventry(title: title)
         } catch {
             print("Error adding data: \(error.localizedDescription)")
+            throw error
         }
     }
 }
