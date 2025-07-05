@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  InvenrotyListViewController.swift
 //  zaico_ios_codingtest
 //
 //  Created by ryo hirota on 2025/03/11.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MainViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class InvenrotyListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let tableView = UITableView()
     private var inventories: [Inventory] = []
 
@@ -85,7 +85,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
 }
 
-extension MainViewController: AddInventoryViewControllerDelegate {
+extension InvenrotyListViewController: AddInventoryViewControllerDelegate {
     func addInventoryViewController(_ viewController: AddInventoryViewController, didAddInventory title: String) {
         dismiss(animated: true)
         refresh()
