@@ -10,9 +10,8 @@ import UIKit
 class DetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     private let inventoryId: Int
-    private var inventory: Inventory?
+    private lazy var presenter = DetailPresenter(inventoryId: inventoryId, view: self)
     private let tableView = UITableView()
-    private let cellTitles = ["ID", "在庫画像", "タイトル", "数量"]
     
     // initメソッドでIDを渡す
     init(id: Int) {
@@ -32,9 +31,7 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         
         setupTableView()
         
-        Task {
-            await fetchData()
-        }
+        presenter.viewDidLoad()
     }
     
     private func setupTableView() {
@@ -54,52 +51,41 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    private func fetchData() async {
-        do {
-            let data = try await APIClient.shared.fetchInventorie(id: inventoryId)
-            await MainActor.run {
-                inventory = data
-                tableView.reloadData()
-            }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
-    }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return cellTitles.count
+        presenter.numberOfCellTitles
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryCell", for: indexPath) as! InventoryCell
+        let cellTitle = presenter.cellTitle(for: indexPath.row)
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryCell", for: indexPath) as! InventoryCell
-            cell.configure(leftText: cellTitles[indexPath.row],
-                           rightText: String(inventory?.id ?? 0))
+            cell.configure(leftText: cellTitle,
+                           rightText: String(presenter.inventory?.id ?? 0))
             return cell
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryImageCell", for: indexPath) as! InventoryImageCell
-            if let imageURL = inventory?.itemImage?.url {
-                cell.configure(leftText: cellTitles[indexPath.row],
+            if let imageURL = presenter.inventory?.itemImage?.url {
+                cell.configure(leftText: cellTitle,
                                rightImageURLString: imageURL)
             } else {
-                cell.configure(leftText: cellTitles[indexPath.row],
+                cell.configure(leftText: cellTitle,
                                rightImageURLString: "imageURL")
             }
             return cell
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryCell", for: indexPath) as! InventoryCell
-            cell.configure(leftText: cellTitles[indexPath.row],
-                           rightText: inventory?.title ?? "")
+            cell.configure(leftText: cellTitle,
+                           rightText: presenter.inventory?.title ?? "")
             return cell
         case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InventoryCell", for: indexPath) as! InventoryCell
             var quantity = "0"
-            if let q = inventory?.quantity {
+            if let q = presenter.inventory?.quantity {
                 quantity = String(q)
             }
-            cell.configure(leftText: cellTitles[indexPath.row],
+            cell.configure(leftText: cellTitle,
                            rightText: quantity)
             return cell
         default:
@@ -114,3 +100,8 @@ class DetailViewController: UIViewController, UITableViewDataSource, UITableView
     }
 }
 
+extension DetailViewController: DetailView {
+    func updateInventory(_ inventory: Inventory) {
+        tableView.reloadData()
+    }
+}
