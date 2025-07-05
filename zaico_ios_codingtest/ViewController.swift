@@ -17,6 +17,7 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         title = "在庫一覧"
         
         setupTableView()
+        setupAddButton()
         
         Task {
             await fetchData()
@@ -37,6 +38,21 @@ class MainViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+    }
+    
+    private func setupAddButton() {
+        let addButton = UIBarButtonItem(
+            title: "＋",
+            style: .plain,
+            target: self,
+            action: #selector(addButtonTapped)
+        )
+        navigationItem.rightBarButtonItem = addButton
+    }
+    
+    @objc private func addButtonTapped(_ sender: UIBarButtonItem) {
+        let addInventoryViewController = AddInventoryViewController()
+        present(addInventoryViewController, animated: true)
     }
     
     private func fetchData() async {
