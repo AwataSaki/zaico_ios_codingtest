@@ -28,13 +28,7 @@ class MockAPIClient: APIClientProtocol {
         guard let id else {
             throw TestError()
         }
-        let jsonData = """
-            {
-                "id": \(id),
-                "title": "タイトル"
-            }
-            """.data(using: .utf8)!
-        return try JSONDecoder().decode(Inventory.self, from: jsonData)
+        return InventoryFactory.create(id: id)
     }
     
     func addInventry(title: String) async throws {

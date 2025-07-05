@@ -14,14 +14,9 @@ struct InventoryListPresenterTests {
     @Test("viewDidLoadで在庫が更新される")
     func fetchInventoriesOnViewDidLoad() async {
         let view = MockInventoryListView()
-        let jsonData = """
-            [
-                { "id": 1, "title": "在庫1" },
-                { "id": 2, "title": "在庫2" }
-            ]
-            """.data(using: .utf8)!
-        let inventories = try! JSONDecoder().decode([Inventory].self, from: jsonData)
-        let apiClient = MockAPIClient(fetchedInventories: inventories)
+        let apiClient = MockAPIClient(
+            fetchedInventories: InventoryFactory.createList(count: 2)
+        )
         let presenter = InventoryListPresenter(view: view, apiClient: apiClient)
         
         // 初期値の確認
@@ -36,14 +31,10 @@ struct InventoryListPresenterTests {
     @Test("在庫の取得に失敗した場合、viewDidLoadで在庫が更新されない")
     func notUpdateInventoriesWhenFetchingFails() async {
         let view = MockInventoryListView()
-        let jsonData = """
-            [
-                { "id": 1, "title": "在庫1" },
-                { "id": 2, "title": "在庫2" }
-            ]
-            """.data(using: .utf8)!
-        let inventories = try! JSONDecoder().decode([Inventory].self, from: jsonData)
-        let apiClient = MockAPIClient(successful: false, fetchedInventories: inventories)
+        let apiClient = MockAPIClient(
+            successful: false,
+            fetchedInventories: InventoryFactory.createList(count: 2)
+        )
         let presenter = InventoryListPresenter(view: view, apiClient: apiClient)
         
         // 初期値の確認
@@ -58,14 +49,9 @@ struct InventoryListPresenterTests {
     @Test("在庫を選択して詳細へ遷移する")
     func transitionToDetailOnSelectInventory() async {
         let view = MockInventoryListView()
-        let jsonData = """
-            [
-                { "id": 1, "title": "在庫1" },
-                { "id": 2, "title": "在庫2" }
-            ]
-            """.data(using: .utf8)!
-        let inventories = try! JSONDecoder().decode([Inventory].self, from: jsonData)
-        let apiClient = MockAPIClient(fetchedInventories: inventories)
+        let apiClient = MockAPIClient(
+            fetchedInventories: InventoryFactory.createList(count: 2)
+        )
         let presenter = InventoryListPresenter(view: view, apiClient: apiClient)
         
         // 初期値の確認
@@ -91,14 +77,9 @@ struct InventoryListPresenterTests {
     @Test("在庫追加時に在庫が更新される")
     func reloadInventoriesOnInventoryIsAdded() async {
         let view = MockInventoryListView()
-        let jsonData = """
-            [
-                { "id": 1, "title": "在庫1" },
-                { "id": 2, "title": "在庫2" }
-            ]
-            """.data(using: .utf8)!
-        let inventories = try! JSONDecoder().decode([Inventory].self, from: jsonData)
-        let apiClient = MockAPIClient(fetchedInventories: inventories)
+        let apiClient = MockAPIClient(
+            fetchedInventories: InventoryFactory.createList(count: 2)
+        )
         let presenter = InventoryListPresenter(view: view, apiClient: apiClient)
         
         // 初期値の確認
